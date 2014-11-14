@@ -1,0 +1,56 @@
+---
+# tasks file for ajsalminen.file_sync
+
+- name: Ensure local dirs for synced directories exist.
+  file:
+    path: "{{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}"
+    state: directory
+  delegate_to: localhost
+  with_subelements:
+    - file_sync_config
+    - dirs
+
+- name: Ensure remote dirs for synced directories exist.
+  file:
+    path: "{{item[1].target|default(item[1].source)}}"
+    state: directory
+  delegate_to: localhost
+  with_subelements:
+    - file_sync_config
+    - dirs
+
+- name: Copy directories to control machine
+  command: >
+    rsync --delay-updates --compress --archive
+    --out-format='{{changed_marker}}%i %n%L'
+    {{ item[1].rsync_params }}
+    {{hostvars[item.0.source].ansible_ssh_user|default(ansible_ssh_user)}}@{{item[0].source}}:{{item[1].source}}
+    {{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}
+  register: rsync_in_result
+  delegate_to: localhost
+  changed_when: "'{{changed_marker}}' in rsync_in_result.stdout"
+  with_subelements:
+    - file_sync_config
+    - dirs
+
+- name: Set connection string
+  set_fact:
+    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{inventory_hostname}}:"
+  when: inventory_hostname != 'localhost'
+
+
+
+- name: Sync files to target
+  command: >
+    rsync --delay-updates --compress --archive
+    --out-format='{{changed_marker}}%i %n%L' {{ item[1].rsync_params }}
+    {{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}
+    {{ file_sync_target_host|default('') }}{{item[1].target|default(item[1].source)}}
+  register: rsync_out_result
+  delegate_to: localhost
+  changed_when: "'{{changed_marker}}' in rsync_out_result.stdout"
+  with_subelements:
+    - file_sync_config
+    - dirs
+
+# fsfs

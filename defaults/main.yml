@@ -1,0 +1,8 @@
+---
+# defaults file for ajsalminen.file_sync
+PLAYBOOK_PRIVATE_ROLE_ASSETS_PATH: "{{ playbook_dir }}/assets/private/roles"
+file_sync_local_dir: /tmp/file_sync
+changed_marker: '<<CHANGED>>'
+# file_sync_rsync_ssh_user: "{{hostvars[inventory_hostname].ansible_ssh_user|default(ansible_ssh_user) }}"
+file_sync_rsync_ssh_user: root
+# file_sync_assets_path: "{{ PLAYBOOK_PRIVATE_ROLE_ASSETS_PATH }}/{{ role_path.rsplit('/', 1)|last }}"
