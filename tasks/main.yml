@@ -38,7 +38,13 @@
     file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{inventory_hostname}}:"
   when: inventory_hostname != 'localhost'
 
-
+- name: Ensure target dirs for synced directories exist.
+  file:
+    path: "{{item[1].target|default(item[1].source)}}"
+    state: directory
+  with_subelements:
+    - file_sync_config
+    - dirs
 
 - name: Sync files to target
   command: >
