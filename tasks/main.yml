@@ -23,7 +23,7 @@
   command: >
     rsync --delay-updates --compress --archive
     --out-format='{{changed_marker}}%i %n%L'
-    {{ item[1].rsync_params }}
+    {{ item[1].rsync_params|default('') }}
     {{hostvars[item.0.source].ansible_ssh_user|default(ansible_ssh_user)}}@{{item[0].source}}:{{item[1].source}}
     {{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}
   register: rsync_in_result
@@ -49,7 +49,7 @@
 - name: Sync files to target
   command: >
     rsync --delay-updates --compress --archive
-    --out-format='{{changed_marker}}%i %n%L' {{ item[1].rsync_params }}
+    --out-format='{{changed_marker}}%i %n%L' {{ item[1].rsync_params|default('') }}
     {{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}
     {{ file_sync_target_host|default('') }}{{item[1].target|default(item[1].source)}}
   register: rsync_out_result
