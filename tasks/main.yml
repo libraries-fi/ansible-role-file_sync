@@ -9,12 +9,12 @@
   with_subelements:
     - file_sync_config
     - dirs
+  sudo: no
 
 - name: Ensure remote dirs for synced directories exist.
   file:
     path: "{{item[1].target|default(item[1].source)}}"
     state: directory
-  delegate_to: localhost
   with_subelements:
     - file_sync_config
     - dirs
@@ -32,6 +32,7 @@
   with_subelements:
     - file_sync_config
     - dirs
+  sudo: no
 
 - name: Set connection string
   set_fact:
@@ -58,5 +59,6 @@
   with_subelements:
     - file_sync_config
     - dirs
+  sudo: no
 
 # fsfs
