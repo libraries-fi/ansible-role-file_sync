@@ -6,3 +6,4 @@ changed_marker: '<<CHANGED>>'
 # file_sync_rsync_ssh_user: "{{hostvars[inventory_hostname].ansible_ssh_user|default(ansible_ssh_user) }}"
 file_sync_rsync_ssh_user: root
 # file_sync_assets_path: "{{ PLAYBOOK_PRIVATE_ROLE_ASSETS_PATH }}/{{ role_path.rsplit('/', 1)|last }}"
+file_sync_target_use_ip: false
