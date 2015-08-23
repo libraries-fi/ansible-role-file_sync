@@ -38,10 +38,10 @@
   set_fact:
     file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{inventory_hostname}}:"
   when: inventory_hostname != 'localhost' and not file_sync_target_use_ip
-  
+
 - name: Set connection string (use IP instead of hostname)
   set_fact:
-    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{ansible_default_ipv4.address}}:"
+    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{ansible_ssh_host|default(ansible_default_ipv4.address)}}:"
   when: inventory_hostname != 'localhost' and file_sync_target_use_ip
 
 - name: Ensure target dirs for synced directories exist.
@@ -52,9 +52,19 @@
     - file_sync_config
     - dirs
 
+- name: Define options for rsync ssh command line.
+  set_fact:
+     file_sync_rsync_options: "{{ file_sync_rsync_options }} --rsync-path='sudo rsync'"
+  when: file_sync_rsync_ssh_user == 'vagrant'
+
+- name: Define options for rsync ssh command line.
+  set_fact:
+    file_sync_rsync_options: " {{ file_sync_rsync_options }} -e 'ssh -i {{ hostvars[inventory_hostname]['ansible_ssh_private_key_file']|expanduser }}'"
+  when: hostvars[inventory_hostname]['ansible_ssh_private_key_file'] is defined
+
 - name: Sync files to target
   command: >
-    rsync --delay-updates --compress --archive
+    rsync --delay-updates --compress --archive {{  file_sync_rsync_options }}
     --out-format='{{changed_marker}}%i %n%L' {{ item[1].rsync_params|default('') }}
     {{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}
     {{ file_sync_target_host|default('') }}{{item[1].target|default(item[1].source)}}
