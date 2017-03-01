@@ -1,0 +1,21 @@
+---
+
+- name: Set connection string
+  set_fact:
+    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{inventory_hostname}}:"
+  when: inventory_hostname != 'localhost' and not file_sync_target_use_ip
+
+- name: Define options for rsync ssh command line.
+  set_fact:
+     file_sync_rsync_options: "{{ file_sync_rsync_options }} --rsync-path='sudo rsync'"
+  when: file_sync_rsync_ssh_user == 'vagrant'
+
+- name: Define options for rsync ssh command line.
+  set_fact:
+    file_sync_rsync_options: " {{ file_sync_rsync_options }} -e 'ssh -i {{ hostvars[inventory_hostname]['ansible_ssh_private_key_file']|expanduser }}'"
+  when: hostvars[inventory_hostname]['ansible_ssh_private_key_file'] is defined
+
+- name: Set connection string (use IP instead of hostname)
+  set_fact:
+    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{ansible_ssh_host|default(ansible_default_ipv4.address)}}:"
+  when: inventory_hostname != 'localhost' and file_sync_target_use_ip

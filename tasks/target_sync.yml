@@ -1,0 +1,20 @@
+---
+- name: Ensure remote dirs for synced directories exist.
+  file:
+    path: "{{item[1].target|default(item[1].source)}}"
+    state: directory
+  with_subelements:
+    - file_sync_config
+    - dirs
+
+- name: Copy directories from source to target.
+  command: >
+    rsync --delay-updates --compress --archive
+    --out-format='{{changed_marker}}%i %n%L'
+    {{ item[1].rsync_params|default('') }}
+    {{hostvars[item.0.source].ansible_ssh_user|default(ansible_ssh_user)}}@{{item[0].source}}:{{item[1].source}} {{ item[1].target }}
+  register: rsync_in_result
+  changed_when: "'{{changed_marker}}' in rsync_in_result.stdout"
+  with_subelements:
+    - file_sync_config
+    - dirs

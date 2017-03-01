@@ -1,79 +1,11 @@
 ---
 # tasks file for ajsalminen.file_sync
 
-- name: Ensure local dirs for synced directories exist.
-  file:
-    path: "{{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}"
-    state: directory
-  delegate_to: localhost
-  with_subelements:
-    - file_sync_config
-    - dirs
-  sudo: no
+- include: connection_strings.yml
 
-- name: Ensure remote dirs for synced directories exist.
-  file:
-    path: "{{item[1].target|default(item[1].source)}}"
-    state: directory
-  with_subelements:
-    - file_sync_config
-    - dirs
+- include: control_host_sync.yml
+  when: file_sync_no_controlhost is not defined
 
-- name: Copy directories to control machine
-  command: >
-    rsync --delay-updates --compress --archive
-    --out-format='{{changed_marker}}%i %n%L'
-    {{ item[1].rsync_params|default('') }}
-    {{hostvars[item.0.source].ansible_ssh_user|default(ansible_ssh_user)}}@{{item[0].source}}:{{item[1].source}}
-    {{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}
-  register: rsync_in_result
-  delegate_to: localhost
-  changed_when: "'{{changed_marker}}' in rsync_in_result.stdout"
-  with_subelements:
-    - file_sync_config
-    - dirs
-  sudo: no
-
-- name: Set connection string
-  set_fact:
-    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{inventory_hostname}}:"
-  when: inventory_hostname != 'localhost' and not file_sync_target_use_ip
-
-- name: Set connection string (use IP instead of hostname)
-  set_fact:
-    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{ansible_ssh_host|default(ansible_default_ipv4.address)}}:"
-  when: inventory_hostname != 'localhost' and file_sync_target_use_ip
-
-- name: Ensure target dirs for synced directories exist.
-  file:
-    path: "{{item[1].target|default(item[1].source)}}"
-    state: directory
-  with_subelements:
-    - file_sync_config
-    - dirs
-
-- name: Define options for rsync ssh command line.
-  set_fact:
-     file_sync_rsync_options: "{{ file_sync_rsync_options }} --rsync-path='sudo rsync'"
-  when: file_sync_rsync_ssh_user == 'vagrant'
-
-- name: Define options for rsync ssh command line.
-  set_fact:
-    file_sync_rsync_options: " {{ file_sync_rsync_options }} -e 'ssh -i {{ hostvars[inventory_hostname]['ansible_ssh_private_key_file']|expanduser }}'"
-  when: hostvars[inventory_hostname]['ansible_ssh_private_key_file'] is defined
-
-- name: Sync files to target
-  command: >
-    rsync --delay-updates --compress --archive {{  file_sync_rsync_options }}
-    --out-format='{{changed_marker}}%i %n%L' {{ item[1].rsync_params|default('') }}
-    {{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}
-    {{ file_sync_target_host|default('') }}{{item[1].target|default(item[1].source)}}
-  register: rsync_out_result
-  delegate_to: localhost
-  changed_when: "'{{changed_marker}}' in rsync_out_result.stdout"
-  with_subelements:
-    - file_sync_config
-    - dirs
-  sudo: no
-
-# fsfs
+# To use this, set "forward-agent 'yes'" to ssh-config, or set up separate keys for nodes connecting to each other.
+- include: target_sync.yml
+  when: file_sync_no_controlhost is defined
