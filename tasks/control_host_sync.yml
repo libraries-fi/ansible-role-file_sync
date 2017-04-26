@@ -9,7 +9,6 @@
   with_subelements:
     - file_sync_config
     - dirs
-  sudo: no
 
 - name: Ensure remote dirs for synced directories exist.
   file:
@@ -32,7 +31,6 @@
   with_subelements:
     - file_sync_config
     - dirs
-  sudo: no
 
 - name: Ensure target dirs for synced directories exist.
   file:
@@ -54,6 +52,5 @@
   with_subelements:
     - file_sync_config
     - dirs
-  sudo: no
 
 # fsfs
