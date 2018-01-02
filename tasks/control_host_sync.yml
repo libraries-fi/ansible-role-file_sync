@@ -7,7 +7,7 @@
     state: directory
   delegate_to: localhost
   with_subelements:
-    - file_sync_config
+    - "{{ file_sync_config }}"
     - dirs
 
 - name: Ensure remote dirs for synced directories exist.
@@ -15,7 +15,7 @@
     path: "{{item[1].target|default(item[1].source)}}"
     state: directory
   with_subelements:
-    - file_sync_config
+    - "{{ file_sync_config }}"
     - dirs
 
 - name: Copy directories to control machine
@@ -29,7 +29,7 @@
   delegate_to: localhost
   changed_when: "'{{changed_marker}}' in rsync_in_result.stdout"
   with_subelements:
-    - file_sync_config
+    - "{{ file_sync_config }}"
     - dirs
 
 - name: Ensure target dirs for synced directories exist.
@@ -37,7 +37,7 @@
     path: "{{item[1].target|default(item[1].source)}}"
     state: directory
   with_subelements:
-    - file_sync_config
+    - "{{ file_sync_config }}"
     - dirs
 
 - name: Sync files to target
@@ -50,7 +50,7 @@
   delegate_to: localhost
   changed_when: "'{{changed_marker}}' in rsync_out_result.stdout"
   with_subelements:
-    - file_sync_config
+    - "{{ file_sync_config }}"
     - dirs
 
 # fsfs
