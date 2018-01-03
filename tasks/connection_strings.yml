@@ -17,5 +17,5 @@
 
 - name: Set connection string (use IP instead of hostname)
   set_fact:
-    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{ansible_ssh_host|default(ansible_default_ipv4.address)}}:"
+    file_sync_target_host: "{{ file_sync_rsync_ssh_user }}@{{ansible_host|default(ansible_default_ipv4.address)}}:"
   when: inventory_hostname != 'localhost' and file_sync_target_use_ip

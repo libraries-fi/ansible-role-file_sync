@@ -4,7 +4,7 @@
     path: "{{item[1].target|default(item[1].source)}}"
     state: directory
   with_subelements:
-    - file_sync_config
+    - "{{ file_sync_config }}"
     - dirs
 
 - name: Copy directories from source to target.
@@ -16,5 +16,5 @@
   register: rsync_in_result
   changed_when: "'{{changed_marker}}' in rsync_in_result.stdout"
   with_subelements:
-    - file_sync_config
+    - "{{ file_sync_config }}"
     - dirs
