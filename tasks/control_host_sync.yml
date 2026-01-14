@@ -23,7 +23,7 @@
     rsync --delay-updates --compress --archive
     --out-format='{{changed_marker}}%i %n%L'
     {{ item[1].rsync_params|default('') }}
-    {{hostvars[item.0.source].ansible_ssh_user|default(ansible_ssh_user)}}@{{item[0].source}}:{{item[1].source}}
+    {{hostvars[item.0.source + '.prod'].ansible_user|default(ansible_user)}}@{{hostvars[item[0].source + '.prod'].ansible_host}}:{{item[1].source}}
     {{ file_sync_local_dir }}/{{item[0].source}}{{ item[1].source }}
   register: rsync_in_result
   delegate_to: localhost
